@@ -1,10 +1,14 @@
 // Kioku — ChatGPT (chatgpt.com / chat.openai.com) capture config.
-// Messages carry the stable attribute data-message-author-role="user|assistant".
-// While the reply is generating, a stop button with
-// data-testid="stop-button" is present — we skip capture ticks until done.
+// Selectors are data, overridable by the remote hotfix (see capture-core.js).
 
 window.__kiokuStart({
   platform: "chatgpt",
+
+  selectors: {
+    message: "[data-message-author-role]",
+    roleAttr: "data-message-author-role",
+    generating: '[data-testid="stop-button"]',
+  },
 
   getId() {
     const m = location.pathname.match(/\/c\/([0-9a-f-]{8,})/i);
@@ -16,14 +20,13 @@ window.__kiokuStart({
   },
 
   scrape() {
-    if (document.querySelector('[data-testid="stop-button"]')) return [];
-    const nodes = document.querySelectorAll("[data-message-author-role]");
+    const s = this.selectors;
+    if (document.querySelector(s.generating)) return [];
+    const nodes = document.querySelectorAll(s.message);
     const messages = [];
     for (const el of nodes) {
       const role =
-        el.getAttribute("data-message-author-role") === "user"
-          ? "user"
-          : "assistant";
+        el.getAttribute(s.roleAttr) === "user" ? "user" : "assistant";
       const text = el.innerText.trim();
       if (text) messages.push({ role, text });
     }

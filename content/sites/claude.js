@@ -1,10 +1,14 @@
 // Kioku — Claude (claude.ai) capture config.
-// User messages:      [data-testid="user-message"]
-// Assistant messages: .font-claude-response ; while generating, the ancestor
-//                     carries data-is-streaming="true", so those are skipped.
+// Selectors are data, overridable by the remote hotfix (see capture-core.js).
 
 window.__kiokuStart({
   platform: "claude",
+
+  selectors: {
+    user: '[data-testid="user-message"]',
+    assistant: ".font-claude-response",
+    streaming: '[data-is-streaming="true"]',
+  },
 
   getId() {
     const m = location.pathname.match(/\/chat\/([0-9a-f-]{8,})/i);
@@ -16,13 +20,12 @@ window.__kiokuStart({
   },
 
   scrape() {
-    const nodes = document.querySelectorAll(
-      '[data-testid="user-message"], .font-claude-response'
-    );
+    const s = this.selectors;
+    const nodes = document.querySelectorAll(s.user + ", " + s.assistant);
     const messages = [];
     for (const el of nodes) {
-      const isUser = el.matches('[data-testid="user-message"]');
-      if (!isUser && el.closest('[data-is-streaming="true"]')) continue;
+      const isUser = el.matches(s.user);
+      if (!isUser && el.closest(s.streaming)) continue;
       const text = el.innerText.trim();
       if (text) messages.push({ role: isUser ? "user" : "assistant", text });
     }

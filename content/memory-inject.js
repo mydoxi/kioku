@@ -15,10 +15,19 @@
     'form textarea', // generic fallback
   ];
 
+  let extraSelectors = [];
+  chrome.storage.local.get("kiokuHotfix", (d) => {
+    extraSelectors = d.kiokuHotfix?.inputSelectors || [];
+  });
+
   const findInput = () => {
-    for (const sel of INPUT_SELECTORS) {
-      const el = document.querySelector(sel);
-      if (el) return el;
+    for (const sel of [...extraSelectors, ...INPUT_SELECTORS]) {
+      try {
+        const el = document.querySelector(sel);
+        if (el) return el;
+      } catch {
+        // ignore malformed override selector
+      }
     }
     return null;
   };

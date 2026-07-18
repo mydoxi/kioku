@@ -7,6 +7,36 @@ import {
   getMemoryBlocks,
 } from "./lib/db.js";
 
+// ---- remote hotfix (data only, never code) ----
+// If a supported site changes its markup, updated selectors are published to
+// this JSON file and picked up within hours — no store re-review. Same
+// policy-compliant pattern as Yume Themes.
+const HOTFIX_URL =
+  "https://raw.githubusercontent.com/mydoxi/kioku-hotfix/main/hotfix.json";
+
+async function refreshHotfix() {
+  try {
+    const res = await fetch(HOTFIX_URL, { cache: "no-store" });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (typeof data !== "object" || !data) return;
+    await chrome.storage.local.set({
+      kiokuHotfix: { sites: data.sites || {}, inputSelectors: data.inputSelectors || [], version: data.version || 0 },
+    });
+  } catch {
+    // Offline / repo unreachable — bundled selectors keep working.
+  }
+}
+
+chrome.runtime.onInstalled.addListener(() => {
+  refreshHotfix();
+  chrome.alarms.create("kioku-hotfix", { periodInMinutes: 360 });
+});
+chrome.runtime.onStartup.addListener(refreshHotfix);
+chrome.alarms.onAlarm.addListener((a) => {
+  if (a.name === "kioku-hotfix") refreshHotfix();
+});
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.type === "kioku-upsert" && msg.convo?.key) {
     upsertConversation(msg.convo)
