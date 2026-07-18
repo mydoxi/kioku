@@ -12,6 +12,14 @@ import {
   deleteFolder,
   setConversationFolder,
 } from "../lib/db.js";
+import {
+  conversationToMarkdown,
+  conversationsToMarkdown,
+  conversationsToJson,
+  safeFilename,
+  download,
+} from "../lib/export.js";
+import { initMemoryView } from "./memory.js";
 
 const listEl = document.getElementById("list");
 const viewerEl = document.getElementById("viewer");
@@ -25,8 +33,24 @@ let folderFilter = null; // null = all, "unfiled", or a folder id
 let currentKey = null;
 let results = [];
 let folders = [];
+let view = "list"; // "list" | "memory"
 
-const PLATFORM_LABEL = { claude: "Claude", chatgpt: "ChatGPT" };
+const PLATFORM_LABEL = { claude: "Claude", chatgpt: "ChatGPT", gemini: "Gemini" };
+
+const memoryViewEl = document.getElementById("memory-view");
+const toolbarEl = document.getElementById("toolbar");
+
+function setView(v) {
+  view = v;
+  closeViewer();
+  memoryViewEl.classList.toggle("hidden", v !== "memory");
+  listEl.classList.toggle("hidden", v !== "list");
+  toolbarEl.classList.toggle("hidden", v !== "list");
+  document
+    .getElementById("nav-memory")
+    .classList.toggle("active", v === "memory");
+  if (v === "list") renderList();
+}
 
 function fmtDate(ts) {
   const d = new Date(ts);
@@ -60,9 +84,9 @@ function highlight(text, q) {
 
 async function refreshCounts() {
   const all = await getAllConversations();
-  const counts = { all: all.length, claude: 0, chatgpt: 0 };
+  const counts = { all: all.length, claude: 0, chatgpt: 0, gemini: 0 };
   for (const c of all) counts[c.platform] = (counts[c.platform] || 0) + 1;
-  for (const k of ["all", "claude", "chatgpt"]) {
+  for (const k of ["all", "claude", "chatgpt", "gemini"]) {
     const el = document.getElementById("count-" + k);
     if (el) el.textContent = counts[k] || 0;
   }
@@ -85,9 +109,8 @@ async function renderFolders() {
     btn.append(name);
     btn.addEventListener("click", () => {
       folderFilter = folderFilter === f.id ? null : f.id;
-      closeViewer();
       renderFolders();
-      renderList();
+      setView("list");
     });
 
     const tools = document.createElement("div");
@@ -139,6 +162,10 @@ async function renderList() {
         : r.convo.folderId === folderFilter
     );
   }
+
+  toolbarEl.classList.toggle("hidden", view !== "list" || !results.length);
+  document.getElementById("toolbar-count").textContent =
+    results.length + " conversation" + (results.length === 1 ? "" : "s") + " in view";
 
   listEl.innerHTML = "";
   if (!results.length) {
@@ -232,27 +259,17 @@ async function openViewer(key) {
   }
 
   listEl.classList.add("hidden");
+  toolbarEl.classList.add("hidden");
   viewerEl.classList.remove("hidden");
 }
 
 function closeViewer() {
   currentKey = null;
   viewerEl.classList.add("hidden");
-  listEl.classList.remove("hidden");
-}
-
-function toMarkdown(convo) {
-  const lines = [
-    `# ${convo.title}`,
-    "",
-    `> Platform: ${PLATFORM_LABEL[convo.platform] || convo.platform} · Archived by Kioku · ${new Date(convo.updatedAt).toLocaleString()}`,
-    `> ${convo.url}`,
-    "",
-  ];
-  for (const m of convo.messages) {
-    lines.push(`## ${m.role === "user" ? "You" : "Assistant"}`, "", m.text, "");
+  if (view === "list") {
+    listEl.classList.remove("hidden");
+    toolbarEl.classList.toggle("hidden", !results.length);
   }
-  return lines.join("\n");
 }
 
 document.getElementById("back").addEventListener("click", closeViewer);
@@ -274,12 +291,33 @@ document.getElementById("folder-select").addEventListener("change", async (e) =>
 document.getElementById("export-md").addEventListener("click", async () => {
   if (!currentKey) return;
   const convo = await getConversation(currentKey);
-  const blob = new Blob([toMarkdown(convo)], { type: "text/markdown" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = convo.title.replace(/[\\/:*?"<>|]/g, "_").slice(0, 80) + ".md";
-  a.click();
-  URL.revokeObjectURL(a.href);
+  download(
+    conversationToMarkdown(convo),
+    safeFilename(convo.title, ".md"),
+    "text/markdown"
+  );
+});
+
+document.getElementById("export-view-md").addEventListener("click", () => {
+  if (!results.length) return;
+  download(
+    conversationsToMarkdown(results.map((r) => r.convo)),
+    safeFilename("kioku-export-" + new Date().toISOString().slice(0, 10), ".md"),
+    "text/markdown"
+  );
+});
+
+document.getElementById("export-view-json").addEventListener("click", () => {
+  if (!results.length) return;
+  download(
+    conversationsToJson(results.map((r) => r.convo)),
+    safeFilename("kioku-export-" + new Date().toISOString().slice(0, 10), ".json"),
+    "application/json"
+  );
+});
+
+document.getElementById("nav-memory").addEventListener("click", () => {
+  setView(view === "memory" ? "list" : "memory");
 });
 
 document.getElementById("delete").addEventListener("click", async () => {
@@ -291,24 +329,20 @@ document.getElementById("delete").addEventListener("click", async () => {
   await renderList();
 });
 
-for (const btn of document.querySelectorAll(".filter")) {
+for (const btn of document.querySelectorAll(".filter[data-platform]")) {
   btn.addEventListener("click", () => {
     platformFilter = btn.dataset.platform;
     document
-      .querySelectorAll(".filter")
+      .querySelectorAll(".filter[data-platform]")
       .forEach((b) => b.classList.toggle("active", b === btn));
-    closeViewer();
-    renderList();
+    setView("list");
   });
 }
 
 let searchTimer = null;
 searchEl.addEventListener("input", () => {
   clearTimeout(searchTimer);
-  searchTimer = setTimeout(() => {
-    closeViewer();
-    renderList();
-  }, 150);
+  searchTimer = setTimeout(() => setView("list"), 150);
 });
 
 const params = new URLSearchParams(location.search);
@@ -316,3 +350,4 @@ if (params.get("q")) searchEl.value = params.get("q");
 
 refreshCounts();
 renderFolders().then(renderList);
+initMemoryView();

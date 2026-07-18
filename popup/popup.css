@@ -46,3 +46,16 @@ h1 { font-size: 16px; }
 .primary:hover { filter: brightness(1.1); }
 
 .note { font-size: 10.5px; color: #97918a; text-align: center; }
+
+.toggle-row {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 10px;
+  font-size: 12px; font-weight: 600;
+  background: #1b1a21;
+  border: 1px solid #2c2a35;
+  border-radius: 9px;
+  padding: 9px 12px;
+  cursor: pointer;
+}
+.toggle-row small { font-weight: 400; font-size: 10px; color: #97918a; }
+.toggle-row input { accent-color: #8b7cf6; width: 16px; height: 16px; }

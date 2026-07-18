@@ -36,11 +36,24 @@ claude.ai / chatgpt.com page
   means editing one small file — and they can later be moved to the same
   remote-hotfix pattern proven in Yume Themes.
 
-## Roadmap after MVP
+## Feature map (v0.3)
 
-1. Folders/projects (tag conversations, sidebar tree)
-2. Bulk export (Markdown/JSON/PDF)
-3. Portable memory: stored context blocks auto-inserted into new chats
-4. Performance mode: DOM virtualization for long chats
-5. Gemini + Grok capture configs
-6. Pro tier (payments via ExtensionPay or license key)
+- ✅ Local archive + search (Claude, ChatGPT, Gemini)
+- ✅ Folders (create/rename/delete, assign, filter; survives re-capture)
+- ✅ Bulk export — current filtered view to .md / .json (`lib/export.js`)
+- ✅ Portable memory — blocks managed in dashboard (`dashboard/memory.js`),
+  inserted into any chat input via the on-page 記 button
+  (`content/memory-inject.js`, data served by the SW)
+- ✅ Performance mode — `content-visibility: auto` on message rows
+  (`content/perf-mode.js`), toggle in popup, default ON
+- ⬜ Grok capture config (`content/sites/grok.js` when wanted)
+- ⬜ Remote selector hotfix (same pattern as Yume Themes)
+- ⬜ Pro tier (payments via ExtensionPay or license key)
+
+## File conventions
+
+- One site = one config file in `content/sites/` (selectors live ONLY there)
+- One dashboard view = one module (`dashboard/memory.js`, …) imported by
+  `dashboard.js`, which owns routing/state
+- All storage access goes through `lib/db.js`; all export formats through
+  `lib/export.js`

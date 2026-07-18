@@ -19,6 +19,7 @@
       <button class="filter active" data-platform="all">All chats <span id="count-all" class="count"></span></button>
       <button class="filter" data-platform="claude">Claude <span id="count-claude" class="count"></span></button>
       <button class="filter" data-platform="chatgpt">ChatGPT <span id="count-chatgpt" class="count"></span></button>
+      <button class="filter" data-platform="gemini">Gemini <span id="count-gemini" class="count"></span></button>
     </nav>
 
     <div class="folders-head">
@@ -26,6 +27,10 @@
       <button id="new-folder" class="icon-btn" title="New folder">＋</button>
     </div>
     <nav id="folders" class="filters folders"></nav>
+
+    <nav class="filters">
+      <button id="nav-memory" class="filter">🧠 Memory <span id="count-memory" class="count"></span></button>
+    </nav>
 
     <div class="sidebar-note">
       100% local — your archive never leaves this browser.
@@ -38,7 +43,29 @@
     </header>
 
     <div class="content">
+      <div id="toolbar" class="toolbar hidden">
+        <span id="toolbar-count"></span>
+        <div class="toolbar-actions">
+          <button id="export-view-md" class="ghost-btn">Export view .md</button>
+          <button id="export-view-json" class="ghost-btn">Export view .json</button>
+        </div>
+      </div>
+
       <section id="list" class="list"></section>
+
+      <section id="memory-view" class="memory-view hidden">
+        <div class="memory-head">
+          <div>
+            <h2>Portable memory</h2>
+            <p class="memory-sub">
+              Context blocks you can insert into any AI chat with the
+              <b>記 memory</b> button that appears on Claude, ChatGPT and Gemini.
+            </p>
+          </div>
+          <button id="new-block" class="ghost-btn">＋ New block</button>
+        </div>
+        <div id="memory-list" class="memory-list"></div>
+      </section>
 
       <section id="viewer" class="viewer hidden">
         <div class="viewer-head">

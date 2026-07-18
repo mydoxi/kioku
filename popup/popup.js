@@ -15,6 +15,14 @@ q.addEventListener("keydown", (e) => {
   if (e.key === "Enter") openDashboard();
 });
 
+const perf = document.getElementById("perf");
+chrome.storage.sync.get({ kiokuPerfMode: true }, (d) => {
+  perf.checked = d.kiokuPerfMode;
+});
+perf.addEventListener("change", () => {
+  chrome.storage.sync.set({ kiokuPerfMode: perf.checked });
+});
+
 chrome.runtime.sendMessage({ type: "kioku-count" }, (res) => {
   if (chrome.runtime.lastError || !res?.ok) {
     stat.textContent = "Your AI chat archive";
