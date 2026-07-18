@@ -84,8 +84,22 @@ statement, local-only privacy policy, and "remote code: NO" answer are what
 gets it through. Do not add any analytics before or after listing without
 updating the privacy policy and data-usage form first.
 
-## Monetization (when ready)
+## Monetization — FREE for now (decided July 2026)
 
-Free: archive + search + 1 folder + 3 memory blocks. Pro (~$4/mo or $29/yr via
-ExtensionPay): unlimited folders & memory, bulk export, priority hotfixes.
-Gate in `lib/limits.js` (to be written) so limits live in one file.
+Everything ships free with no gates. Reason: payment processors available to
+extensions (ExtensionPay→Stripe, Paddle, Lemon Squeezy) are not currently
+usable from Morocco (Stripe unsupported; Paddle verification failed; Lemon
+Squeezy account under review).
+
+Being fully free is used as a growth weapon: "100% free, 100% private" beats
+every freemium competitor's pitch and accelerates installs/ratings.
+
+Revisit when any of these unlocks:
+- Lemon Squeezy approval (merchant of record; pays out via PayPal/wire —
+  works for Moroccan developers) — best option, revisit first
+- Gumroad license keys (PayPal payout) as a manual-but-workable fallback
+- Paddle retry with better address documents
+
+When one works: introduce Pro as NEW features only (never take away what free
+users already have — that causes review-bombing). Candidates for Pro at that
+point: scheduled auto-backup, cross-device sync, AI-powered search.
