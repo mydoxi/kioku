@@ -1,7 +1,7 @@
-{
+﻿{
   "manifest_version": 3,
   "name": "Kioku - AI Chat Archive & Search",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Your AI workspace layer: local archive, instant search and export for Claude and ChatGPT. Private - everything stays in your browser.",
   "permissions": ["storage"],
   "background": {

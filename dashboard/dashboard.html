@@ -21,6 +21,12 @@
       <button class="filter" data-platform="chatgpt">ChatGPT <span id="count-chatgpt" class="count"></span></button>
     </nav>
 
+    <div class="folders-head">
+      <span>Folders</span>
+      <button id="new-folder" class="icon-btn" title="New folder">＋</button>
+    </div>
+    <nav id="folders" class="filters folders"></nav>
+
     <div class="sidebar-note">
       100% local — your archive never leaves this browser.
     </div>
@@ -39,6 +45,7 @@
           <button id="back" class="ghost-btn">← Back</button>
           <h2 id="viewer-title"></h2>
           <div class="viewer-actions">
+            <select id="folder-select" class="ghost-btn" title="Move to folder"></select>
             <a id="open-original" class="ghost-btn" target="_blank" rel="noopener">Open original ↗</a>
             <button id="export-md" class="ghost-btn">Export .md</button>
             <button id="delete" class="ghost-btn danger">Delete</button>

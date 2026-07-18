@@ -6,6 +6,11 @@ import {
   searchConversations,
   getConversation,
   deleteConversation,
+  getFolders,
+  createFolder,
+  renameFolder,
+  deleteFolder,
+  setConversationFolder,
 } from "../lib/db.js";
 
 const listEl = document.getElementById("list");
@@ -16,8 +21,10 @@ const viewerTitle = document.getElementById("viewer-title");
 const openOriginal = document.getElementById("open-original");
 
 let platformFilter = "all";
+let folderFilter = null; // null = all, "unfiled", or a folder id
 let currentKey = null;
 let results = [];
+let folders = [];
 
 const PLATFORM_LABEL = { claude: "Claude", chatgpt: "ChatGPT" };
 
@@ -61,11 +68,76 @@ async function refreshCounts() {
   }
 }
 
+async function renderFolders() {
+  folders = await getFolders();
+  const nav = document.getElementById("folders");
+  nav.innerHTML = "";
+
+  for (const f of folders) {
+    const row = document.createElement("div");
+    row.className = "folder-row";
+
+    const btn = document.createElement("button");
+    btn.className = "filter" + (folderFilter === f.id ? " active" : "");
+    const name = document.createElement("span");
+    name.className = "name";
+    name.textContent = "📁 " + f.name;
+    btn.append(name);
+    btn.addEventListener("click", () => {
+      folderFilter = folderFilter === f.id ? null : f.id;
+      closeViewer();
+      renderFolders();
+      renderList();
+    });
+
+    const tools = document.createElement("div");
+    tools.className = "folder-tools";
+
+    const rename = document.createElement("button");
+    rename.className = "icon-btn";
+    rename.title = "Rename";
+    rename.textContent = "✎";
+    rename.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const newName = prompt("Rename folder:", f.name);
+      if (newName?.trim()) {
+        await renameFolder(f.id, newName);
+        renderFolders();
+        renderList();
+      }
+    });
+
+    const del = document.createElement("button");
+    del.className = "icon-btn";
+    del.title = "Delete folder (chats are kept)";
+    del.textContent = "✕";
+    del.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      if (!confirm(`Delete folder "${f.name}"? Conversations inside are kept.`)) return;
+      await deleteFolder(f.id);
+      if (folderFilter === f.id) folderFilter = null;
+      renderFolders();
+      renderList();
+    });
+
+    tools.append(rename, del);
+    row.append(btn, tools);
+    nav.append(row);
+  }
+}
+
 async function renderList() {
   const q = searchEl.value.trim();
   results = await searchConversations(q);
   if (platformFilter !== "all") {
     results = results.filter((r) => r.convo.platform === platformFilter);
+  }
+  if (folderFilter) {
+    results = results.filter((r) =>
+      folderFilter === "unfiled"
+        ? !r.convo.folderId
+        : r.convo.folderId === folderFilter
+    );
   }
 
   listEl.innerHTML = "";
@@ -99,7 +171,15 @@ async function renderList() {
     date.textContent =
       fmtDate(convo.updatedAt) + " · " + convo.messages.length + " msgs";
 
-    top.append(badge, title, date);
+    top.append(badge, title);
+    const folder = folders.find((f) => f.id === convo.folderId);
+    if (folder) {
+      const chip = document.createElement("span");
+      chip.className = "folder-chip";
+      chip.textContent = folder.name;
+      top.append(chip);
+    }
+    top.append(date);
     card.append(top);
 
     const snip = document.createElement("div");
@@ -123,6 +203,21 @@ async function openViewer(key) {
 
   viewerTitle.textContent = convo.title;
   openOriginal.href = convo.url;
+
+  const sel = document.getElementById("folder-select");
+  sel.innerHTML = "";
+  const none = document.createElement("option");
+  none.value = "";
+  none.textContent = "No folder";
+  sel.append(none);
+  for (const f of folders) {
+    const opt = document.createElement("option");
+    opt.value = f.id;
+    opt.textContent = "📁 " + f.name;
+    sel.append(opt);
+  }
+  sel.value = convo.folderId || "";
+
   messagesEl.innerHTML = "";
 
   for (const m of convo.messages) {
@@ -161,6 +256,20 @@ function toMarkdown(convo) {
 }
 
 document.getElementById("back").addEventListener("click", closeViewer);
+
+document.getElementById("new-folder").addEventListener("click", async () => {
+  const name = prompt("New folder name:");
+  if (name?.trim()) {
+    await createFolder(name);
+    renderFolders();
+  }
+});
+
+document.getElementById("folder-select").addEventListener("change", async (e) => {
+  if (!currentKey) return;
+  await setConversationFolder(currentKey, e.target.value || null);
+  renderList();
+});
 
 document.getElementById("export-md").addEventListener("click", async () => {
   if (!currentKey) return;
@@ -206,4 +315,4 @@ const params = new URLSearchParams(location.search);
 if (params.get("q")) searchEl.value = params.get("q");
 
 refreshCounts();
-renderList();
+renderFolders().then(renderList);
