@@ -28,9 +28,14 @@ async function refreshHotfix() {
   }
 }
 
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener((details) => {
   refreshHotfix();
   chrome.alarms.create("kioku-hotfix", { periodInMinutes: 360 });
+  if (details.reason === "install") {
+    chrome.tabs.create({
+      url: chrome.runtime.getURL("dashboard/dashboard.html?welcome=1"),
+    });
+  }
 });
 chrome.runtime.onStartup.addListener(refreshHotfix);
 chrome.alarms.onAlarm.addListener((a) => {

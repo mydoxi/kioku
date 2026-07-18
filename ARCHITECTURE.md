@@ -46,9 +46,15 @@ claude.ai / chatgpt.com page
   (`content/memory-inject.js`, data served by the SW)
 - ✅ Performance mode — `content-visibility: auto` on message rows
   (`content/perf-mode.js`), toggle in popup, default ON
+- ✅ Remote selector hotfix (`background.js` fetch → storage.local →
+  `capture-core.js` merges over bundled selectors; repo: mydoxi/kioku-hotfix)
+- ✅ Backup & restore — full-archive JSON export/import (`lib/backup.js`),
+  merge semantics: newer updatedAt wins, ids preserved
+- ✅ Pinned conversations (survive re-capture, float to top)
+- ✅ Popup recent chats (deep-link `?open=<key>`), archive stats,
+  `/` and `Esc` keyboard shortcuts, first-run welcome (`?welcome=1`)
 - ⬜ Grok capture config (`content/sites/grok.js` when wanted)
-- ⬜ Remote selector hotfix (same pattern as Yume Themes)
-- ⬜ Pro tier (payments via ExtensionPay or license key)
+- ⬜ Pro tier (payments via ExtensionPay or license key — needs owner account)
 
 ## File conventions
 

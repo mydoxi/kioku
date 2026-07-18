@@ -32,8 +32,16 @@
       <button id="nav-memory" class="filter">🧠 Memory <span id="count-memory" class="count"></span></button>
     </nav>
 
-    <div class="sidebar-note">
-      100% local — your archive never leaves this browser.
+    <div class="sidebar-bottom">
+      <div id="stats" class="stats"></div>
+      <div class="backup-row">
+        <button id="backup" class="ghost-btn" title="Download everything as one JSON file">⬇ Backup</button>
+        <button id="restore" class="ghost-btn" title="Import a Kioku backup file">⬆ Restore</button>
+        <input id="restore-file" type="file" accept="application/json" hidden />
+      </div>
+      <div class="sidebar-note">
+        100% local — your archive never leaves this browser.
+      </div>
     </div>
   </aside>
 
@@ -43,6 +51,21 @@
     </header>
 
     <div class="content">
+      <div id="welcome" class="welcome hidden">
+        <h2>Welcome to Kioku 記</h2>
+        <p>
+          Kioku archives your AI conversations <b>automatically</b> — just chat
+          normally on <b>claude.ai</b>, <b>chatgpt.com</b> or
+          <b>gemini.google.com</b> and everything appears here, searchable
+          forever, stored only in your browser.
+        </p>
+        <p>
+          Tip: create a <b>🧠 Memory</b> block (your context, your style) and
+          insert it into any AI chat with the floating <b>記 memory</b> button.
+        </p>
+        <button id="welcome-close" class="ghost-btn">Got it</button>
+      </div>
+
       <div id="toolbar" class="toolbar hidden">
         <span id="toolbar-count"></span>
         <div class="toolbar-actions">

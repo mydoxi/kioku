@@ -103,13 +103,44 @@ h1 { font-size: 17px; }
   color: var(--muted);
 }
 
-.sidebar-note {
+.sidebar-bottom {
   margin-top: auto;
-  font-size: 11px; line-height: 1.5;
-  color: var(--muted);
+  display: flex; flex-direction: column; gap: 10px;
   border-top: 1px solid var(--border);
   padding-top: 12px;
 }
+
+.stats { font-size: 11px; color: var(--muted); line-height: 1.6; }
+.stats b { color: var(--text); }
+
+.backup-row { display: flex; gap: 6px; }
+.backup-row .ghost-btn { flex: 1; text-align: center; }
+
+.sidebar-note {
+  font-size: 11px; line-height: 1.5;
+  color: var(--muted);
+}
+
+.welcome {
+  background: linear-gradient(135deg, #8b7cf61a, #4ecbb514);
+  border: 1px solid #8b7cf655;
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+  max-width: 860px;
+}
+.welcome h2 { font-size: 16px; margin-bottom: 8px; }
+.welcome p { font-size: 13px; color: var(--text); line-height: 1.6; margin-bottom: 8px; }
+.welcome b { color: var(--accent); }
+
+.pin-btn {
+  font-family: inherit; font-size: 13px;
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); flex-shrink: 0;
+  padding: 0 2px;
+}
+.pin-btn:hover { color: var(--text); }
+.pin-btn.pinned { color: #f0c65e; }
 
 /* ---- main ---- */
 main { flex: 1; display: flex; flex-direction: column; min-width: 0; }

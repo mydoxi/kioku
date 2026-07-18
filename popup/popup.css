@@ -35,6 +35,35 @@ h1 { font-size: 16px; }
 }
 #q:focus { border-color: #8b7cf6; }
 
+.recent { display: flex; flex-direction: column; gap: 3px; }
+
+.recent-row {
+  display: flex; align-items: center; gap: 8px;
+  font-family: inherit; font-size: 12px;
+  color: #cfcac2;
+  background: none;
+  border: none; border-radius: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+.recent-row:hover { background: #1e1d24; }
+
+.mini-badge {
+  width: 18px; height: 18px; flex-shrink: 0;
+  display: grid; place-items: center;
+  font-size: 10px; font-weight: 700;
+  border-radius: 5px;
+}
+.mini-badge.claude { background: #d9775726; color: #d97757; }
+.mini-badge.chatgpt { background: #4ecb8d26; color: #4ecb8d; }
+.mini-badge.gemini { background: #6c9bf526; color: #6c9bf5; }
+
+.recent-title {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
 .primary {
   font-family: inherit; font-size: 13px; font-weight: 700;
   color: #fff;

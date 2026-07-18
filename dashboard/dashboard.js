@@ -11,7 +11,9 @@ import {
   renameFolder,
   deleteFolder,
   setConversationFolder,
+  togglePinned,
 } from "../lib/db.js";
+import { exportAll, importAll } from "../lib/backup.js";
 import {
   conversationToMarkdown,
   conversationsToMarkdown,
@@ -85,11 +87,21 @@ function highlight(text, q) {
 async function refreshCounts() {
   const all = await getAllConversations();
   const counts = { all: all.length, claude: 0, chatgpt: 0, gemini: 0 };
-  for (const c of all) counts[c.platform] = (counts[c.platform] || 0) + 1;
+  let msgs = 0;
+  let words = 0;
+  for (const c of all) {
+    counts[c.platform] = (counts[c.platform] || 0) + 1;
+    msgs += c.messages.length;
+    for (const m of c.messages) words += m.text.split(/\s+/).length;
+  }
   for (const k of ["all", "claude", "chatgpt", "gemini"]) {
     const el = document.getElementById("count-" + k);
     if (el) el.textContent = counts[k] || 0;
   }
+  document.getElementById("stats").innerHTML =
+    `<b>${all.length.toLocaleString()}</b> chats · ` +
+    `<b>${msgs.toLocaleString()}</b> messages<br>` +
+    `<b>${words.toLocaleString()}</b> words archived`;
 }
 
 async function renderFolders() {
@@ -162,6 +174,9 @@ async function renderList() {
         : r.convo.folderId === folderFilter
     );
   }
+  // Pinned conversations float to the top (within pinned/unpinned groups the
+  // newest-first order from the DB is kept).
+  results.sort((a, b) => (b.convo.pinned ? 1 : 0) - (a.convo.pinned ? 1 : 0));
 
   toolbarEl.classList.toggle("hidden", view !== "list" || !results.length);
   document.getElementById("toolbar-count").textContent =
@@ -185,6 +200,16 @@ async function renderList() {
     const top = document.createElement("div");
     top.className = "card-top";
 
+    const pin = document.createElement("button");
+    pin.className = "pin-btn" + (convo.pinned ? " pinned" : "");
+    pin.textContent = convo.pinned ? "★" : "☆";
+    pin.title = convo.pinned ? "Unpin" : "Pin to top";
+    pin.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      await togglePinned(convo.key);
+      renderList();
+    });
+
     const badge = document.createElement("span");
     badge.className = "badge " + convo.platform;
     badge.textContent = PLATFORM_LABEL[convo.platform] || convo.platform;
@@ -198,7 +223,7 @@ async function renderList() {
     date.textContent =
       fmtDate(convo.updatedAt) + " · " + convo.messages.length + " msgs";
 
-    top.append(badge, title);
+    top.append(pin, badge, title);
     const folder = folders.find((f) => f.id === convo.folderId);
     if (folder) {
       const chip = document.createElement("span");
@@ -345,9 +370,61 @@ searchEl.addEventListener("input", () => {
   searchTimer = setTimeout(() => setView("list"), 150);
 });
 
+// ---- backup & restore ----
+document.getElementById("backup").addEventListener("click", async () => {
+  download(
+    await exportAll(),
+    safeFilename("kioku-backup-" + new Date().toISOString().slice(0, 10), ".json"),
+    "application/json"
+  );
+});
+
+const restoreFile = document.getElementById("restore-file");
+document.getElementById("restore").addEventListener("click", () => restoreFile.click());
+restoreFile.addEventListener("change", async () => {
+  const file = restoreFile.files[0];
+  restoreFile.value = "";
+  if (!file) return;
+  try {
+    const counts = await importAll(await file.text());
+    alert(
+      `Restore complete:\n${counts.conversations} conversations, ` +
+        `${counts.folders} folders, ${counts.memory} memory blocks imported` +
+        (counts.skipped ? `\n(${counts.skipped} already up to date)` : "")
+    );
+    refreshCounts();
+    renderFolders().then(renderList);
+  } catch (e) {
+    alert("Restore failed: " + e.message);
+  }
+});
+
+// ---- keyboard shortcuts ----
+document.addEventListener("keydown", (e) => {
+  if (e.key === "/" && document.activeElement !== searchEl) {
+    e.preventDefault();
+    searchEl.focus();
+    searchEl.select();
+  }
+  if (e.key === "Escape" && currentKey) closeViewer();
+});
+
+// ---- deep links & first run ----
 const params = new URLSearchParams(location.search);
 if (params.get("q")) searchEl.value = params.get("q");
 
+if (params.get("welcome")) {
+  const welcomeEl = document.getElementById("welcome");
+  welcomeEl.classList.remove("hidden");
+  document.getElementById("welcome-close").addEventListener("click", () => {
+    welcomeEl.classList.add("hidden");
+  });
+}
+
 refreshCounts();
-renderFolders().then(renderList);
+renderFolders()
+  .then(renderList)
+  .then(() => {
+    if (params.get("open")) openViewer(params.get("open"));
+  });
 initMemoryView();
