@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "Kioku - AI Chat Archive & Search",
+  "version": "0.1.0",
+  "description": "Your AI workspace layer: local archive, instant search and export for Claude and ChatGPT. Private - everything stays in your browser.",
+  "permissions": ["storage"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://claude.ai/*"],
+      "js": ["content/capture-core.js", "content/capture-claude.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*"],
+      "js": ["content/capture-core.js", "content/capture-chatgpt.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Kioku",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

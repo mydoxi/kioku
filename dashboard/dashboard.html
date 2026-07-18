@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kioku — AI Chat Archive</title>
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">記</span>
+      <div>
+        <h1>Kioku</h1>
+        <p class="tagline">Your AI chat archive</p>
+      </div>
+    </div>
+
+    <nav id="filters" class="filters">
+      <button class="filter active" data-platform="all">All chats <span id="count-all" class="count"></span></button>
+      <button class="filter" data-platform="claude">Claude <span id="count-claude" class="count"></span></button>
+      <button class="filter" data-platform="chatgpt">ChatGPT <span id="count-chatgpt" class="count"></span></button>
+    </nav>
+
+    <div class="sidebar-note">
+      100% local — your archive never leaves this browser.
+    </div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <input id="search" type="search" placeholder="Search every conversation…" autofocus />
+    </header>
+
+    <div class="content">
+      <section id="list" class="list"></section>
+
+      <section id="viewer" class="viewer hidden">
+        <div class="viewer-head">
+          <button id="back" class="ghost-btn">← Back</button>
+          <h2 id="viewer-title"></h2>
+          <div class="viewer-actions">
+            <a id="open-original" class="ghost-btn" target="_blank" rel="noopener">Open original ↗</a>
+            <button id="export-md" class="ghost-btn">Export .md</button>
+            <button id="delete" class="ghost-btn danger">Delete</button>
+          </div>
+        </div>
+        <div id="messages" class="messages"></div>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="dashboard.js"></script>
+</body>
+</html>

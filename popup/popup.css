@@ -1,0 +1,48 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  width: 300px;
+  font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+  background: #131217;
+  color: #efece6;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.brand { display: flex; align-items: center; gap: 10px; }
+
+.brand-mark {
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  background: linear-gradient(135deg, #8b7cf6, #4ecbb5);
+  color: #fff; font-size: 17px; font-weight: 700;
+  border-radius: 9px;
+}
+
+h1 { font-size: 16px; }
+.stat { font-size: 11px; color: #97918a; }
+
+#q {
+  font-family: inherit; font-size: 13px;
+  color: #efece6;
+  background: #1b1a21;
+  border: 1px solid #2c2a35;
+  border-radius: 9px;
+  padding: 9px 12px;
+  outline: none;
+}
+#q:focus { border-color: #8b7cf6; }
+
+.primary {
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #8b7cf6, #6c5ce0);
+  border: none; border-radius: 9px;
+  padding: 10px;
+  cursor: pointer;
+}
+.primary:hover { filter: brightness(1.1); }
+
+.note { font-size: 10.5px; color: #97918a; text-align: center; }
